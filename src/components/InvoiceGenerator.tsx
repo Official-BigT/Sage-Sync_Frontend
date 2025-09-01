@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import {
   Card,
   CardContent,
@@ -30,6 +31,8 @@ interface InvoiceItem {
 }
 
 const InvoiceGenerator = () => {
+  const { currency, formatCurrency, availableCurrencies } = useCurrency();
+
   const [invoiceData, setInvoiceData] = useState({
     invoiceNumber: "INV-001",
     clientName: "",
@@ -38,7 +41,7 @@ const InvoiceGenerator = () => {
     issueDate: new Date().toISOString().split("T")[0],
     dueDate: "",
     notes: "",
-    currency: "USD",
+    currency: currency.code,
   });
 
   const [items, setItems] = useState<InvoiceItem[]>([
@@ -151,19 +154,25 @@ const InvoiceGenerator = () => {
                   <Label htmlFor="currency">Currency</Label>
                   <Select
                     value={invoiceData.currency}
-                    onValueChange={(value) =>
-                      setInvoiceData({ ...invoiceData, currency: value })
-                    }
+                    onValueChange={(value) => {
+                      setInvoiceData({ ...invoiceData, currency: value });
+                      // Also update the global currency preference
+                      const selectedCurrency = availableCurrencies.find(
+                        (curr) => curr.code === value
+                      );
+                      if (selectedCurrency) {setCurrency(selectedCurrency);
+                      }
+                    }}
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="USD">USD ($)</SelectItem>
-                      <SelectItem value="EUR">EUR (€)</SelectItem>
-                      <SelectItem value="NGN">NGN (₦)</SelectItem>
-                      <SelectItem value="GHS">GHS (₵)</SelectItem>
-                      <SelectItem value="KES">KES (KSh)</SelectItem>
+                      {availableCurrencies.map((curr) => (
+                        <SelectItem key={curr.code} value={curr.code}>
+                          {curr.code} ({curr.symbol})
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -318,7 +327,7 @@ const InvoiceGenerator = () => {
                   <div className="col-span-2">
                     <Label>Amount</Label>
                     <Input
-                      value={item.amount.toFixed(2)}
+                      value={formatCurrency(item.amount)}
                       disabled
                       className="bg-gray-50"
                     />
@@ -366,16 +375,18 @@ const InvoiceGenerator = () => {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Subtotal:</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>{formatCurrency(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Tax (10%):</span>
-                  <span>${tax.toFixed(2)}</span>
+                  <span>{formatCurrency(tax)}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between font-bold text-lg">
                   <span>Total:</span>
-                  <span className="text-emerald-600">${total.toFixed(2)}</span>
+                  <span className="text-emerald-600">
+                    {formatCurrency(total)}
+                  </span>
                 </div>
               </div>
 

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import {
   Card,
   CardContent,
@@ -37,7 +38,13 @@ interface Expense {
   recurring: boolean;
 }
 
-const ExpenseTracker = () => {
+interface ExpenseTrackerProps {
+  isPro?: boolean;
+}
+
+const ExpenseTracker = ({ isPro = false }: ExpenseTrackerProps) => {
+  const { formatCurrency } = useCurrency();
+
   const [expenses, setExpenses] = useState<Expense[]>([
     {
       id: 1,
@@ -225,7 +232,7 @@ const ExpenseTracker = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              ${totalExpenses.toFixed(2)}
+              {formatCurrency(totalExpenses)}
             </div>
             <p className="text-xs text-muted-foreground">This month</p>
           </CardContent>
@@ -238,7 +245,7 @@ const ExpenseTracker = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">
-              ${businessExpenses.toFixed(2)}
+              {formatCurrency(businessExpenses)}
             </div>
             <p className="text-xs text-muted-foreground">Tax deductible</p>
           </CardContent>
@@ -251,7 +258,7 @@ const ExpenseTracker = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-gray-600">
-              ${personalExpenses.toFixed(2)}
+              {formatCurrency(personalExpenses)}
             </div>
             <p className="text-xs text-muted-foreground">Non-deductible</p>
           </CardContent>
@@ -279,7 +286,7 @@ const ExpenseTracker = () => {
                   setNewExpense({ ...newExpense, description: e.target.value })
                 }
               />
-              {aiSuggestion && (
+              {isPro && aiSuggestion && (
                 <p className="text-xs text-blue-600 mt-1">
                   💡 AI suggests: {aiSuggestion}
                   <Button
@@ -292,6 +299,11 @@ const ExpenseTracker = () => {
                   >
                     Use this
                   </Button>
+                </p>
+              )}
+              {!isPro && (
+                <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 p-2 rounded mt-2">
+                  AI category suggestions are a Pro feature. Upgrade to unlock.
                 </p>
               )}
             </div>
@@ -436,7 +448,7 @@ const ExpenseTracker = () => {
                     </div>
                     <div className="text-left sm:text-right">
                       <p className="font-bold text-red-600 text-sm sm:text-base">
-                        ${expense.amount.toFixed(2)}
+                        {formatCurrency(expense.amount)}
                       </p>
                     </div>
                   </div>

@@ -1,9 +1,22 @@
-
-import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import React from "react";
+import { useCurrency } from "@/contexts/CurrencyContext";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, FileText, TrendingUp, CheckCircle, Clock, AlertCircle } from "lucide-react";
+import {
+  DollarSign,
+  FileText,
+  TrendingUp,
+  CheckCircle,
+  Clock,
+  AlertCircle,
+} from "lucide-react";
 
 interface DashboardOverviewProps {
   user: {
@@ -13,10 +26,13 @@ interface DashboardOverviewProps {
     currentEarnings: number;
     totalInvoices: number;
     paidInvoices: number;
+    plan?: "free" | "pro";
   };
+  isPro?: boolean;
 }
 
-const DashboardOverview = ({ user }: DashboardOverviewProps) => {
+const DashboardOverview = ({ user, isPro = false }: DashboardOverviewProps) => {
+  const { formatCurrency } = useCurrency();
   const goalProgress = (user.currentEarnings / user.monthlyGoal) * 100;
   const unpaidInvoices = user.totalInvoices - user.paidInvoices;
 
@@ -24,8 +40,12 @@ const DashboardOverview = ({ user }: DashboardOverviewProps) => {
     <div className="space-y-6">
       {/* Welcome Section */}
       <div className="bg-gradient-to-r from-blue-600 to-emerald-500 rounded-xl p-4 sm:p-6 text-white">
-        <h2 className="text-xl sm:text-2xl font-bold mb-2">Welcome back, {user.name}! 👋</h2>
-        <p className="text-sm sm:text-base text-blue-100">Here's what's happening with your finances today.</p>
+        <h2 className="text-xl sm:text-2xl font-bold mb-2">
+          Welcome back, {user.name}! 👋
+        </h2>
+        <p className="text-sm sm:text-base text-blue-100">
+          Here's what's happening with your finances today.
+        </p>
       </div>
 
       {/* Key Metrics */}
@@ -36,9 +56,11 @@ const DashboardOverview = ({ user }: DashboardOverviewProps) => {
             <TrendingUp className="h-4 w-4 text-emerald-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${user.currentEarnings.toLocaleString()}</div>
+            <div className="text-2xl font-bold">
+              {formatCurrency(user.currentEarnings)}
+            </div>
             <div className="text-xs text-muted-foreground mb-2">
-              of ${user.monthlyGoal.toLocaleString()} goal
+              of {formatCurrency(user.monthlyGoal)} goal
             </div>
             <Progress value={goalProgress} className="h-2" />
             <p className="text-xs text-emerald-600 mt-1">
@@ -49,14 +71,14 @@ const DashboardOverview = ({ user }: DashboardOverviewProps) => {
 
         <Card className="hover:shadow-lg transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Invoices</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Invoices
+            </CardTitle>
             <FileText className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{user.totalInvoices}</div>
-            <p className="text-xs text-muted-foreground">
-              This month
-            </p>
+            <p className="text-xs text-muted-foreground">This month</p>
           </CardContent>
         </Card>
 
@@ -66,9 +88,12 @@ const DashboardOverview = ({ user }: DashboardOverviewProps) => {
             <CheckCircle className="h-4 w-4 text-emerald-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-emerald-600">{user.paidInvoices}</div>
+            <div className="text-2xl font-bold text-emerald-600">
+              {user.paidInvoices}
+            </div>
             <p className="text-xs text-muted-foreground">
-              {((user.paidInvoices / user.totalInvoices) * 100).toFixed(0)}% success rate
+              {((user.paidInvoices / user.totalInvoices) * 100).toFixed(0)}%
+              success rate
             </p>
           </CardContent>
         </Card>
@@ -79,10 +104,10 @@ const DashboardOverview = ({ user }: DashboardOverviewProps) => {
             <Clock className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{unpaidInvoices}</div>
-            <p className="text-xs text-muted-foreground">
-              Awaiting payment
-            </p>
+            <div className="text-2xl font-bold text-orange-600">
+              {unpaidInvoices}
+            </div>
+            <p className="text-xs text-muted-foreground">Awaiting payment</p>
           </CardContent>
         </Card>
       </div>
@@ -101,7 +126,9 @@ const DashboardOverview = ({ user }: DashboardOverviewProps) => {
               </div>
               <div className="flex-1">
                 <p className="text-sm font-medium">Invoice #001 paid</p>
-                <p className="text-xs text-muted-foreground">$750 • 2 hours ago</p>
+                <p className="text-xs text-muted-foreground">
+                  $750 • 2 hours ago
+                </p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
@@ -110,7 +137,9 @@ const DashboardOverview = ({ user }: DashboardOverviewProps) => {
               </div>
               <div className="flex-1">
                 <p className="text-sm font-medium">New invoice created</p>
-                <p className="text-xs text-muted-foreground">$1,200 • 1 day ago</p>
+                <p className="text-xs text-muted-foreground">
+                  $1,200 • 1 day ago
+                </p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
@@ -119,7 +148,9 @@ const DashboardOverview = ({ user }: DashboardOverviewProps) => {
               </div>
               <div className="flex-1">
                 <p className="text-sm font-medium">Expense recorded</p>
-                <p className="text-xs text-muted-foreground">$45 office supplies • 2 days ago</p>
+                <p className="text-xs text-muted-foreground">
+                  $45 office supplies • 2 days ago
+                </p>
               </div>
             </div>
           </CardContent>
@@ -128,36 +159,64 @@ const DashboardOverview = ({ user }: DashboardOverviewProps) => {
         <Card>
           <CardHeader>
             <CardTitle>AI Insights</CardTitle>
-            <CardDescription>Smart recommendations for your business</CardDescription>
+            <CardDescription>
+              Smart recommendations for your business
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-start space-x-3">
-                <TrendingUp className="h-5 w-5 text-blue-600 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-blue-900">Revenue Growth</p>
-                  <p className="text-xs text-blue-700">You're 28% ahead of last month! Keep up the great work.</p>
+            {!isPro && (
+              <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-lg p-4">
+                <p className="text-sm">
+                  AI Insights are available on the Pro plan. Upgrade to unlock
+                  personalized suggestions.
+                </p>
+              </div>
+            )}
+            {isPro && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start space-x-3">
+                  <TrendingUp className="h-5 w-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-blue-900">
+                      Revenue Growth
+                    </p>
+                    <p className="text-xs text-blue-700">
+                      You're 28% ahead of last month! Keep up the great work.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-              <div className="flex items-start space-x-3">
-                <AlertCircle className="h-5 w-5 text-orange-600 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-orange-900">Payment Reminder</p>
-                  <p className="text-xs text-orange-700">2 invoices are overdue. Consider sending follow-up emails.</p>
+            )}
+            {isPro && (
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <div className="flex items-start space-x-3">
+                  <AlertCircle className="h-5 w-5 text-orange-600 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-orange-900">
+                      Payment Reminder
+                    </p>
+                    <p className="text-xs text-orange-700">
+                      2 invoices are overdue. Consider sending follow-up emails.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
-              <div className="flex items-start space-x-3">
-                <CheckCircle className="h-5 w-5 text-emerald-600 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-emerald-900">Tax Preparation</p>
-                  <p className="text-xs text-emerald-700">Your expenses are well-categorized for tax season!</p>
+            )}
+            {isPro && (
+              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                <div className="flex items-start space-x-3">
+                  <CheckCircle className="h-5 w-5 text-emerald-600 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-emerald-900">
+                      Tax Preparation
+                    </p>
+                    <p className="text-xs text-emerald-700">
+                      Your expenses are well-categorized for tax season!
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
       </div>

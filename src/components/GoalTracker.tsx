@@ -1,12 +1,25 @@
-
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState } from "react";
+import { useCurrency } from "@/contexts/CurrencyContext";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Target, TrendingUp, Calendar, DollarSign, Award, Zap } from "lucide-react";
+import {
+  Target,
+  TrendingUp,
+  Calendar,
+  DollarSign,
+  Award,
+  Zap,
+} from "lucide-react";
 
 interface GoalTrackerProps {
   user: {
@@ -16,7 +29,9 @@ interface GoalTrackerProps {
     currentEarnings: number;
     totalInvoices: number;
     paidInvoices: number;
+    plan?: "free" | "pro";
   };
+  isPro?: boolean;
 }
 
 interface Goal {
@@ -25,46 +40,48 @@ interface Goal {
   target: number;
   current: number;
   deadline: string;
-  type: 'revenue' | 'clients' | 'invoices';
-  status: 'active' | 'completed' | 'overdue';
+  type: "revenue" | "clients" | "invoices";
+  status: "active" | "completed" | "overdue";
 }
 
-const GoalTracker = ({ user }: GoalTrackerProps) => {
+const GoalTracker: React.FC<GoalTrackerProps> = ({ user, isPro = false }) => {
+  const { formatCurrency } = useCurrency();
+
   const [goals, setGoals] = useState<Goal[]>([
     {
       id: 1,
-      title: 'Monthly Revenue Target',
+      title: "Monthly Revenue Target",
       target: user.monthlyGoal,
       current: user.currentEarnings,
-      deadline: '2024-01-31',
-      type: 'revenue',
-      status: 'active'
+      deadline: "2024-01-31",
+      type: "revenue",
+      status: "active",
     },
     {
       id: 2,
-      title: 'New Clients This Quarter',
+      title: "New Clients This Quarter",
       target: 10,
       current: 7,
-      deadline: '2024-03-31',
-      type: 'clients',
-      status: 'active'
+      deadline: "2024-03-31",
+      type: "clients",
+      status: "active",
     },
     {
       id: 3,
-      title: 'Invoices Sent This Month',
+      title: "Invoices Sent This Month",
       target: 15,
       current: user.totalInvoices,
-      deadline: '2024-01-31',
-      type: 'invoices',
-      status: 'active'
-    }
+      deadline: "2024-01-31",
+      type: "invoices",
+      status: "active",
+    },
   ]);
 
   const [newGoal, setNewGoal] = useState({
-    title: '',
-    target: '',
-    deadline: '',
-    type: 'revenue' as 'revenue' | 'clients' | 'invoices'
+    title: "",
+    target: "",
+    deadline: "",
+    type: "revenue" as "revenue" | "clients" | "invoices",
   });
 
   const addGoal = () => {
@@ -76,32 +93,39 @@ const GoalTracker = ({ user }: GoalTrackerProps) => {
         current: 0,
         deadline: newGoal.deadline,
         type: newGoal.type,
-        status: 'active'
+        status: "active",
       };
       setGoals([...goals, goal]);
       setNewGoal({
-        title: '',
-        target: '',
-        deadline: '',
-        type: 'revenue'
+        title: "",
+        target: "",
+        deadline: "",
+        type: "revenue",
       });
     }
   };
 
   const getGoalIcon = (type: string) => {
     switch (type) {
-      case 'revenue': return <DollarSign className="h-4 w-4" />;
-      case 'clients': return <Target className="h-4 w-4" />;
-      case 'invoices': return <Calendar className="h-4 w-4" />;
-      default: return <Target className="h-4 w-4" />;
+      case "revenue":
+        return <DollarSign className="h-4 w-4" />;
+      case "clients":
+        return <Target className="h-4 w-4" />;
+      case "invoices":
+        return <Calendar className="h-4 w-4" />;
+      default:
+        return <Target className="h-4 w-4" />;
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-emerald-500';
-      case 'overdue': return 'bg-red-500';
-      default: return 'bg-blue-500';
+      case "completed":
+        return "bg-emerald-500";
+      case "overdue":
+        return "bg-red-500";
+      default:
+        return "bg-blue-500";
     }
   };
 
@@ -127,7 +151,9 @@ const GoalTracker = ({ user }: GoalTrackerProps) => {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-3xl font-bold text-gray-900">Goal Tracker</h2>
-          <p className="text-gray-500">Set and track your business milestones</p>
+          <p className="text-gray-500">
+            Set and track your business milestones
+          </p>
         </div>
         <Button className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700">
           <Target className="h-4 w-4" />
@@ -144,26 +170,43 @@ const GoalTracker = ({ user }: GoalTrackerProps) => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-emerald-600">28%</div>
-              <p className="text-sm text-gray-600">Above last month</p>
+          {!isPro && (
+            <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-lg p-4">
+              <p className="text-sm">
+                AI Performance Insights are available on the Pro plan. Upgrade
+                to unlock predictive analytics and suggestions.
+              </p>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">12 days</div>
-              <p className="text-sm text-gray-600">To monthly goal</p>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">$1,800</div>
-              <p className="text-sm text-gray-600">Still needed</p>
-            </div>
-          </div>
-          <div className="mt-4 p-3 bg-white rounded-lg border">
-            <p className="text-sm text-blue-900">
-              💡 <strong>Smart Suggestion:</strong> Based on your current pace, you'll exceed your monthly goal by 5%. 
-              Consider increasing your target for next month!
-            </p>
-          </div>
+          )}
+          {isPro && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-emerald-600">28%</div>
+                  <p className="text-sm text-gray-600">Above last month</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">
+                    12 days
+                  </div>
+                  <p className="text-sm text-gray-600">To monthly goal</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-orange-600">
+                    $1,800
+                  </div>
+                  <p className="text-sm text-gray-600">Still needed</p>
+                </div>
+              </div>
+              <div className="mt-4 p-3 bg-white rounded-lg border">
+                <p className="text-sm text-blue-900">
+                  💡 <strong>Smart Suggestion:</strong> Based on your current
+                  pace, you'll exceed your monthly goal by 5%. Consider
+                  increasing your target for next month!
+                </p>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
@@ -173,25 +216,45 @@ const GoalTracker = ({ user }: GoalTrackerProps) => {
           {goals.map((goal) => {
             const progress = (goal.current / goal.target) * 100;
             const daysRemaining = getDaysRemaining(goal.deadline);
-            
+
             return (
               <Card key={goal.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg ${getStatusColor(goal.status)} text-white`}>
+                      <div
+                        className={`p-2 rounded-lg ${getStatusColor(
+                          goal.status
+                        )} text-white`}
+                      >
                         {getGoalIcon(goal.type)}
                       </div>
                       <div>
                         <CardTitle className="text-lg">{goal.title}</CardTitle>
                         <CardDescription>
-                          {goal.type === 'revenue' ? '$' : ''}{goal.current.toLocaleString()} of {goal.type === 'revenue' ? '$' : ''}{goal.target.toLocaleString()}
+                          {goal.type === "revenue"
+                            ? formatCurrency(goal.current)
+                            : goal.current.toLocaleString()}{" "}
+                          of{" "}
+                          {goal.type === "revenue"
+                            ? formatCurrency(goal.target)
+                            : goal.target.toLocaleString()}
                         </CardDescription>
                       </div>
                     </div>
                     <div className="text-right">
-                      <Badge variant={daysRemaining > 7 ? 'default' : daysRemaining > 0 ? 'destructive' : 'secondary'}>
-                        {daysRemaining > 0 ? `${daysRemaining} days left` : 'Overdue'}
+                      <Badge
+                        variant={
+                          daysRemaining > 7
+                            ? "default"
+                            : daysRemaining > 0
+                            ? "destructive"
+                            : "secondary"
+                        }
+                      >
+                        {daysRemaining > 0
+                          ? `${daysRemaining} days left`
+                          : "Overdue"}
                       </Badge>
                     </div>
                   </div>
@@ -200,21 +263,25 @@ const GoalTracker = ({ user }: GoalTrackerProps) => {
                   <div>
                     <div className="flex justify-between text-sm mb-2">
                       <span>Progress</span>
-                      <span className="font-medium">{progress.toFixed(1)}%</span>
+                      <span className="font-medium">
+                        {progress.toFixed(1)}%
+                      </span>
                     </div>
                     <Progress value={Math.min(progress, 100)} className="h-3" />
                   </div>
-                  
+
                   <div className="bg-gray-50 rounded-lg p-3">
                     <p className="text-sm text-gray-700">
                       {getMotivationalMessage(progress)}
                     </p>
                   </div>
-                  
+
                   {progress >= 100 && (
                     <div className="flex items-center gap-2 text-emerald-600">
                       <Award className="h-4 w-4" />
-                      <span className="text-sm font-medium">Goal Completed!</span>
+                      <span className="text-sm font-medium">
+                        Goal Completed!
+                      </span>
                     </div>
                   )}
                 </CardContent>
@@ -237,10 +304,12 @@ const GoalTracker = ({ user }: GoalTrackerProps) => {
                   id="goalTitle"
                   placeholder="e.g., Reach $10k revenue"
                   value={newGoal.title}
-                  onChange={(e) => setNewGoal({...newGoal, title: e.target.value})}
+                  onChange={(e) =>
+                    setNewGoal({ ...newGoal, title: e.target.value })
+                  }
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="goalTarget">Target Value</Label>
                 <Input
@@ -248,7 +317,9 @@ const GoalTracker = ({ user }: GoalTrackerProps) => {
                   type="number"
                   placeholder="e.g., 10000"
                   value={newGoal.target}
-                  onChange={(e) => setNewGoal({...newGoal, target: e.target.value})}
+                  onChange={(e) =>
+                    setNewGoal({ ...newGoal, target: e.target.value })
+                  }
                 />
               </div>
 
@@ -258,7 +329,9 @@ const GoalTracker = ({ user }: GoalTrackerProps) => {
                   id="goalDeadline"
                   type="date"
                   value={newGoal.deadline}
-                  onChange={(e) => setNewGoal({...newGoal, deadline: e.target.value})}
+                  onChange={(e) =>
+                    setNewGoal({ ...newGoal, deadline: e.target.value })
+                  }
                 />
               </div>
 
@@ -279,18 +352,24 @@ const GoalTracker = ({ user }: GoalTrackerProps) => {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm">Active Goals</span>
-                <Badge>{goals.filter(g => g.status === 'active').length}</Badge>
+                <Badge>
+                  {goals.filter((g) => g.status === "active").length}
+                </Badge>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm">Success Rate</span>
-                <Badge variant="outline" className="text-emerald-600">85%</Badge>
+                <Badge variant="outline" className="text-emerald-600">
+                  85%
+                </Badge>
               </div>
-              
+
               <div className="pt-4 border-t">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-emerald-600">🏆</div>
                   <p className="text-sm font-medium mt-1">Goal Crusher</p>
-                  <p className="text-xs text-gray-500">Keep up the great work!</p>
+                  <p className="text-xs text-gray-500">
+                    Keep up the great work!
+                  </p>
                 </div>
               </div>
             </CardContent>

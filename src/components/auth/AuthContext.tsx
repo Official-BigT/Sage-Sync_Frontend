@@ -15,6 +15,7 @@ interface User {
   businessName: string;
   businessType: string;
   avatar: string | null;
+  plan: "free" | "pro";
 }
 
 interface AuthResponse {
@@ -267,6 +268,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 businessName: "JD Freelance Services",
                 businessType: "freelancer",
                 avatar: null,
+                plan: "free",
               },
               token: "demo-jwt-token-" + Date.now(),
             },
@@ -297,6 +299,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
               businessName: userData.businessName,
               businessType: userData.businessType,
               avatar: null,
+              plan: "free",
             },
             token: "demo-jwt-token-" + Date.now(),
           },

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import {
   Card,
   CardContent,
@@ -29,14 +31,17 @@ import { useAuth } from "@/components/auth/AuthContext";
 
 const Index = () => {
   const { user, logout } = useAuth();
+  const { currency } = useCurrency();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [userData, setUserData] = useState({
     name: "Triumph Anya-Nga",
     business: "OF D S0UTH CTO/CEO",
-    monthlyGoal: 100000000000,
-    currentEarnings: 0,
-    totalInvoices: 0,
-    paidInvoices: 0,
+    monthlyGoal: 100000000,
+    currentEarnings: 1500000,
+    totalInvoices: 1000,
+    paidInvoices: 920,
+    plan: "free" as "free" | "pro",
   });
 
   // Update user data when auth user changes
@@ -49,12 +54,17 @@ const Index = () => {
         currentEarnings: 3200,
         totalInvoices: 12,
         paidInvoices: 10,
+        plan: user.plan,
       });
     }
   }, [user]);
 
   const handleLogout = () => {
     logout();
+  };
+
+  const handleProfileClick = () => {
+    navigate("/profile");
   };
 
   return (
@@ -82,7 +92,13 @@ const Index = () => {
                   variant="outline"
                   className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs sm:text-sm"
                 >
-                  Pro Plan
+                  {userData.plan === "pro" ? "Pro Plan" : "Free Plan"}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className="bg-blue-50 text-blue-700 border-blue-200 text-xs sm:text-sm"
+                >
+                  {currency.code} ({currency.symbol})
                 </Badge>
                 <div className="text-right">
                   <p className="text-sm font-medium text-gray-900 truncate max-w-[120px] lg:max-w-none">
@@ -97,6 +113,7 @@ const Index = () => {
                 <Button
                   variant="ghost"
                   size="sm"
+                  onClick={handleProfileClick}
                   className="text-gray-600 hover:text-gray-900 p-2 sm:p-2"
                 >
                   <User className="h-4 w-4" />
@@ -165,7 +182,10 @@ const Index = () => {
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-6">
-            <DashboardOverview user={userData} />
+            <DashboardOverview
+              user={userData}
+              isPro={userData.plan === "pro"}
+            />
           </TabsContent>
 
           <TabsContent value="invoices" className="space-y-6">
@@ -173,11 +193,11 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="expenses" className="space-y-6">
-            <ExpenseTracker />
+            <ExpenseTracker isPro={userData.plan === "pro"} />
           </TabsContent>
 
           <TabsContent value="goals" className="space-y-6">
-            <GoalTracker user={userData} />
+            <GoalTracker user={userData} isPro={userData.plan === "pro"} />
           </TabsContent>
 
           <TabsContent value="business-card" className="space-y-6">
