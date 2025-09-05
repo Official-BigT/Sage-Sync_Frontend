@@ -25,7 +25,7 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface FormData {
   email: string;
@@ -371,19 +371,25 @@ export function LoginPage() {
                 <div className="w-7 h-7 sm:w-8 sm:h-8 bg-blue-100 rounded-full flex items-center justify-center">
                   <Shield className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600" />
                 </div>
-                <span className="font-medium text-center">Secure & Encrypted</span>
+                <span className="font-medium text-center">
+                  Secure & Encrypted
+                </span>
               </div>
               <div className="flex flex-col items-center space-y-2 min-w-[100px] flex-1">
                 <div className="w-7 h-7 sm:w-8 sm:h-8 bg-emerald-100 rounded-full flex items-center justify-center">
                   <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-600" />
                 </div>
-                <span className="font-medium text-center">Professional Invoicing</span>
+                <span className="font-medium text-center">
+                  Professional Invoicing
+                </span>
               </div>
               <div className="flex flex-col items-center space-y-2 min-w-[100px] flex-1">
                 <div className="w-7 h-7 sm:w-8 sm:h-8 bg-purple-100 rounded-full flex items-center justify-center">
                   <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-600" />
                 </div>
-                <span className="font-medium text-center">Financial Insights</span>
+                <span className="font-medium text-center">
+                  Financial Insights
+                </span>
               </div>
             </div>
           </div>

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useAuth } from "@/components/auth/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useNavigate } from "react-router-dom";
 import {

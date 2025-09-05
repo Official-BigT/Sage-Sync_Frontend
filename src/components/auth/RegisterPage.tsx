@@ -36,7 +36,10 @@ import {
   Users,
   Star,
 } from "lucide-react";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { registerUser } from "@/services/authService";
 
 interface FormData {
   firstName: string;
@@ -71,8 +74,8 @@ interface PasswordStrength {
 }
 
 export function RegisterPage() {
-  const navigate = useNavigate();
-  const { register } = useAuth();
+  // const navigate = useNavigate();
+  // const { register } = useAuth();
 
   const [formData, setFormData] = useState<FormData>({
     firstName: "",
@@ -88,7 +91,7 @@ export function RegisterPage() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
 
   const businessTypes = [
@@ -102,6 +105,22 @@ export function RegisterPage() {
     "Online Store",
     "Other",
   ];
+
+  const { mutate: register, isPending } = useMutation({
+    mutationFn: registerUser,
+    onSuccess: (res) => {
+      if (res.success) {
+        toast.success(
+          "Registration successful! Please check your email to verify your account."
+        );
+      } else {
+        toast.error(res.message || "Registration failed. Try again.");
+      }
+    },
+    onError: () => {
+      toast.error("Something went wrong. Please try again.");
+    },
+  });
 
   const handleInputChange = (
     field: keyof FormData,
@@ -165,39 +184,21 @@ export function RegisterPage() {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     if (!validateForm()) return;
 
-    setIsLoading(true);
-
-    try {
-      const result = await register({
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password,
-        businessName: formData.businessName,
-        businessType: formData.businessType,
-      });
-
-      if (result.success) {
-        // Redirect to dashboard on successful registration
-        navigate("/");
-      } else {
-        setErrors({
-          general: result.error || "Registration failed. Please try again.",
-        });
-      }
-    } catch (error) {
-      setErrors({ general: "Registration failed. Please try again." });
-    } finally {
-      setIsLoading(false);
-    }
+    register({
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      phone: formData.phone,
+      businessName: formData.businessName,
+      businessType: formData.businessType,
+      password: formData.password,
+      agreeToTerms: formData.agreeToTerms,
+    });
   };
-
   const getPasswordStrength = (): PasswordStrength => {
     const password = formData.password;
     if (!password) return { strength: 0, label: "", color: "" };
@@ -314,7 +315,6 @@ export function RegisterPage() {
                               ? "border-red-500 focus:border-red-500 focus:ring-red-200"
                               : "border-gray-200"
                           }`}
-                          disabled={isLoading}
                         />
                       </div>
                       {errors.firstName && (
@@ -348,7 +348,7 @@ export function RegisterPage() {
                               ? "border-red-500 focus:border-red-500 focus:ring-red-200"
                               : "border-gray-200"
                           }`}
-                          disabled={isLoading}
+                          disabled={isPending}
                         />
                       </div>
                       {errors.lastName && (
@@ -384,7 +384,7 @@ export function RegisterPage() {
                               ? "border-red-500 focus:border-red-500 focus:ring-red-200"
                               : "border-gray-200"
                           }`}
-                          disabled={isLoading}
+                          disabled={isPending}
                         />
                       </div>
                       {errors.email && (
@@ -418,7 +418,7 @@ export function RegisterPage() {
                               ? "border-red-500 focus:border-red-500 focus:ring-red-200"
                               : "border-gray-200"
                           }`}
-                          disabled={isLoading}
+                          disabled={isPending}
                         />
                       </div>
                       {errors.phone && (
@@ -465,7 +465,7 @@ export function RegisterPage() {
                               ? "border-red-500 focus:border-red-500 focus:ring-red-200"
                               : "border-gray-200"
                           }`}
-                          disabled={isLoading}
+                          disabled={isPending}
                         />
                       </div>
                       {errors.businessName && (
@@ -489,7 +489,7 @@ export function RegisterPage() {
                         onValueChange={(value) =>
                           handleInputChange("businessType", value)
                         }
-                        disabled={isLoading}
+                        disabled={isPending}
                       >
                         <SelectTrigger
                           className={`h-12 border-2 transition-all duration-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 ${
@@ -502,7 +502,7 @@ export function RegisterPage() {
                         </SelectTrigger>
                         <SelectContent>
                           {businessTypes.map((type) => (
-                            <SelectItem key={type} value={type.toLowerCase()}>
+                            <SelectItem key={type} value={type}>
                               {type}
                             </SelectItem>
                           ))}
@@ -552,13 +552,13 @@ export function RegisterPage() {
                               ? "border-red-500 focus:border-red-500 focus:ring-red-200"
                               : "border-gray-200"
                           }`}
-                          disabled={isLoading}
+                          disabled={isPending}
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
                           className="absolute right-4 top-3.5 text-gray-400 hover:text-gray-600 transition-colors"
-                          disabled={isLoading}
+                          disabled={isPending}
                         >
                           {showPassword ? (
                             <EyeOff className="h-5 w-5" />
@@ -615,7 +615,7 @@ export function RegisterPage() {
                               ? "border-red-500 focus:border-red-500 focus:ring-red-200"
                               : "border-gray-200"
                           }`}
-                          disabled={isLoading}
+                          disabled={isPending}
                         />
                         <button
                           type="button"
@@ -623,7 +623,7 @@ export function RegisterPage() {
                             setShowConfirmPassword(!showConfirmPassword)
                           }
                           className="absolute right-4 top-3.5 text-gray-400 hover:text-gray-600 transition-colors"
-                          disabled={isLoading}
+                          disabled={isPending}
                         >
                           {showConfirmPassword ? (
                             <EyeOff className="h-5 w-5" />
@@ -651,7 +651,7 @@ export function RegisterPage() {
                       onCheckedChange={(checked) =>
                         handleInputChange("agreeToTerms", checked as boolean)
                       }
-                      disabled={isLoading}
+                      disabled={isPending}
                       className={`border-2 ${
                         errors.agreeToTerms
                           ? "border-red-500"
@@ -697,7 +697,7 @@ export function RegisterPage() {
                           checked as boolean
                         )
                       }
-                      disabled={isLoading}
+                      disabled={isPending}
                       className="border-2 border-gray-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                     />
                     <Label
@@ -713,9 +713,9 @@ export function RegisterPage() {
                 <Button
                   type="submit"
                   className="w-full h-12 bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02]"
-                  disabled={isLoading}
+                  disabled={isPending}
                 >
-                  {isLoading ? (
+                  {isPending ? (
                     <div className="flex items-center space-x-3">
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       <span>Creating account...</span>

@@ -19,7 +19,7 @@ import {
   AlertCircle,
   Clock,
 } from "lucide-react";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 export function ForgotPasswordPage() {
   const { forgotPassword } = useAuth();

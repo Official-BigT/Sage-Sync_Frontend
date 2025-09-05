@@ -6,6 +6,8 @@ import {
   ReactNode,
 } from "react";
 
+import { registerUser, loginUser } from "@/services/authService";
+
 // Type definitions
 interface User {
   id: string;
