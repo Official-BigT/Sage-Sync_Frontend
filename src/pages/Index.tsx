@@ -27,7 +27,7 @@ import InvoiceGenerator from "@/components/InvoiceGenerator";
 import ExpenseTracker from "@/components/ExpenseTracker";
 import GoalTracker from "@/components/GoalTracker";
 import BusinessCard from "@/components/BusinessCard";
-import { useAuth } from "@/components/auth/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   const { user, logout } = useAuth();

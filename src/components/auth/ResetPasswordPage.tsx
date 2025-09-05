@@ -20,7 +20,7 @@ import {
   ArrowRight,
   Shield,
 } from "lucide-react";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface FormData {
   password: string;
