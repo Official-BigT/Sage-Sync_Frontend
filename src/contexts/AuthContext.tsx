@@ -14,6 +14,7 @@ interface User {
   firstName: string;
   lastName: string;
   email: string;
+  phone: string;
   businessName: string;
   businessType: string;
   avatar: string | null;
@@ -50,9 +51,11 @@ interface RegisterData {
   firstName: string;
   lastName: string;
   email: string;
-  password: string;
+  phone: string;
   businessName: string;
   businessType: string;
+  password: string;
+  agreeToTerms: boolean;
 }
 
 interface AuthProviderProps {
@@ -157,8 +160,39 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       setIsLoading(true);
 
-      // Simulate API registration call
-      const response = await simulateRegister(userData);
+      const response = await fetch("http://localhost:5680/api/v1/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData),
+      });
+
+      const data: AuthResponse = await response.json();
+
+      if (data.success) {
+        // Do NOT log in new user just yet
+        // Do NOT store token in localStorage just yet
+        // Just show success message
+        return {
+          success: true,
+          // Send a message for the frontend UI
+          error:
+            "Registration successful. Please verify your email before logging in.",
+        };
+      } else {
+        return { success: false, error: data.error };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: "Server error. Please try again.",
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Simulate API registration call
+  /* const response = await simulateRegister(userData);
 
       if (response.success && response.data) {
         // For demo, auto-login after registration
@@ -181,8 +215,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       };
     } finally {
       setIsLoading(false);
-    }
-  };
+    }*/
 
   const logout = (): void => {
     // Clear all auth data
@@ -267,6 +300,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 firstName: "John",
                 lastName: "Doe",
                 email: email,
+                phone: "",
                 businessName: "JD Freelance Services",
                 businessType: "freelancer",
                 avatar: null,
@@ -298,6 +332,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
               firstName: userData.firstName,
               lastName: userData.lastName,
               email: userData.email,
+              phone: userData.phone,
               businessName: userData.businessName,
               businessType: userData.businessType,
               avatar: null,

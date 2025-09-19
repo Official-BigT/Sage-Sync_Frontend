@@ -10,6 +10,7 @@ export interface RegisterData {
   businessType: string;
   password: string;
   agreeToTerms: boolean;
+  subscribeNewsletter: boolean;
 }
 
 export interface LoginData {

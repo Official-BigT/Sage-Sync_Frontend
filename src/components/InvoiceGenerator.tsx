@@ -160,7 +160,8 @@ const InvoiceGenerator = () => {
                       const selectedCurrency = availableCurrencies.find(
                         (curr) => curr.code === value
                       );
-                      if (selectedCurrency) {setCurrency(selectedCurrency);
+                      if (selectedCurrency) {
+                        currencyContext?.setCurrency(selectedCurrency);
                       }
                     }}
                   >

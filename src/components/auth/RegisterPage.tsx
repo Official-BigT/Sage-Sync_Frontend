@@ -74,8 +74,8 @@ interface PasswordStrength {
 }
 
 export function RegisterPage() {
-  // const navigate = useNavigate();
-  // const { register } = useAuth();
+  const navigate = useNavigate();
+  const { register } = useAuth();
 
   const [formData, setFormData] = useState<FormData>({
     firstName: "",
@@ -106,7 +106,7 @@ export function RegisterPage() {
     "Other",
   ];
 
-  const { mutate: register, isPending } = useMutation({
+  const { mutate: registerMutation, isPending } = useMutation({
     mutationFn: registerUser,
     onSuccess: (res) => {
       if (res.success) {
@@ -188,7 +188,7 @@ export function RegisterPage() {
     e.preventDefault();
     if (!validateForm()) return;
 
-    register({
+    registerMutation({
       firstName: formData.firstName,
       lastName: formData.lastName,
       email: formData.email,
@@ -197,6 +197,8 @@ export function RegisterPage() {
       businessType: formData.businessType,
       password: formData.password,
       agreeToTerms: formData.agreeToTerms,
+    subscribeNewsletter: formData.subscribeNewsletter
+
     });
   };
   const getPasswordStrength = (): PasswordStrength => {
@@ -227,6 +229,8 @@ export function RegisterPage() {
   };
 
   const passwordStrength = getPasswordStrength();
+
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50 relative overflow-hidden">
