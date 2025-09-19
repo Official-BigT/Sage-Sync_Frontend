@@ -6,7 +6,12 @@ import {
   ReactNode,
 } from "react";
 
-import { registerUser, loginUser } from "@/services/authService";
+import {
+  registerUser,
+  loginUser,
+  getCurrentUser,
+  refreshToken,
+} from "@/services/authService";
 
 // Type definitions
 interface User {
@@ -56,6 +61,7 @@ interface RegisterData {
   businessType: string;
   password: string;
   agreeToTerms: boolean;
+  subscribeToNewsletter: boolean;
 }
 
 interface AuthProviderProps {
@@ -84,28 +90,54 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const checkAuthStatus = async (): Promise<void> => {
     try {
-      // Check for stored auth token
-      const token = localStorage.getItem("authToken");
-      const userData = localStorage.getItem("userData");
+      setIsLoading(true);
 
-      if (token && userData) {
-        // Validate token with backend (simulated)
-        const isValid = await validateToken(token);
-
-        if (isValid) {
-          setUser(JSON.parse(userData));
-          setIsAuthenticated(true);
-        } else {
-          // Token is invalid, clear storage
-          localStorage.removeItem("authToken");
-          localStorage.removeItem("userData");
-        }
+      const res = await getCurrentUser(); //calls /auth/me
+      if (res.data) {
+        setUser(res.data);
+        setIsAuthenticated(true);
       }
     } catch (error) {
-      console.error("Auth check failed:", error);
+      try {
+        // try to refresh token if access expired
+        await refreshToken();
+        const res = await getCurrentUser();
+        if (res.data) {
+          setUser(res.data);
+          setIsAuthenticated(true);
+        }
+      } catch (refreshErr) {
+        setUser(null);
+        setIsAuthenticated(false);
+      }
     } finally {
       setIsLoading(false);
     }
+
+    // Obsolete localstorage logic
+    // try {
+    //   // Check for stored auth token
+    //   const token = localStorage.getItem("authToken");
+    //   const userData = localStorage.getItem("userData");
+
+    //   if (token && userData) {
+    //     // Validate token with backend (simulated)
+    //     const isValid = await validateToken(token);
+
+    //     if (isValid) {
+    //       setUser(JSON.parse(userData));
+    //       setIsAuthenticated(true);
+    //     } else {
+    //       // Token is invalid, clear storage
+    //       localStorage.removeItem("authToken");
+    //       localStorage.removeItem("userData");
+    //     }
+    //   }
+    // } catch (error) {
+    //   console.error("Auth check failed:", error);
+    // } finally {
+    //   setIsLoading(false);
+    // }
   };
 
   const validateToken = async (token: string): Promise<boolean> => {
@@ -127,59 +159,62 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       setIsLoading(true);
 
-      // Simulate API login call
-      const response = await simulateLogin(email, password);
-
-      if (response.success && response.data) {
-        const { user: userData, token } = response.data;
-
-        // Store auth data
-        localStorage.setItem("authToken", token);
-        localStorage.setItem("userData", JSON.stringify(userData));
-
-        if (rememberMe) {
-          // Set longer expiration for remember me
-          localStorage.setItem("rememberMe", "true");
-        }
-
-        setUser(userData);
-        setIsAuthenticated(true);
-
+      const response = await loginUser({ email, password });
+      if (response) {
+        await checkAuthStatus(); //load user into context
         return { success: true };
       } else {
-        return { success: false, error: response.error };
+        return { success: false, error: "Login failed" };
       }
     } catch (error) {
-      return { success: false, error: "Login failed. Please try again." };
+      return { success: false, error: "Login failed, Please try again." };
     } finally {
       setIsLoading(false);
     }
   };
+  // Simulate API login call
+  //   const response = await simulateLogin(email, password);
+
+  //   if (response.success && response.data) {
+  //     const { user: userData, token } = response.data;
+
+  //     // Store auth data
+  //     localStorage.setItem("authToken", token);
+  //     localStorage.setItem("userData", JSON.stringify(userData));
+
+  //     if (rememberMe) {
+  //       // Set longer expiration for remember me
+  //       localStorage.setItem("rememberMe", "true");
+  //     }
+
+  //     setUser(userData);
+  //     setIsAuthenticated(true);
+
+  //     return { success: true };
+  //   } else {
+  //     return { success: false, error: response.error };
+  //   }
+  // } catch (error) {
+  //   return { success: false, error: "Login failed. Please try again." };
+  // } finally {
+  //   setIsLoading(false);
+  // }
 
   const register = async (userData: RegisterData): Promise<AuthResponse> => {
     try {
       setIsLoading(true);
 
-      const response = await fetch("http://localhost:5680/api/v1/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userData),
-      });
-
-      const data: AuthResponse = await response.json();
-
-      if (data.success) {
-        // Do NOT log in new user just yet
-        // Do NOT store token in localStorage just yet
-        // Just show success message
+      const res = await registerUser(userData);
+      if (res.success !== false) {
         return {
           success: true,
-          // Send a message for the frontend UI
-          error:
-            "Registration successful. Please verify your email before logging in.",
+          error: "Registration successful. Please verify your email.",
         };
       } else {
-        return { success: false, error: data.error };
+        return {
+          success: false,
+          error: res.message || "Registration failed",
+        };
       }
     } catch (error) {
       return {
@@ -218,14 +253,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }*/
 
   const logout = (): void => {
-    // Clear all auth data
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("userData");
-    localStorage.removeItem("rememberMe");
-
     setUser(null);
     setIsAuthenticated(false);
+    // Optionally call backend /auth/logout to clear cookies
   };
+
+  // Simulate logout from app
+  // // Clear all auth data
+  // localStorage.removeItem("authToken");
+  // localStorage.removeItem("userData");
+  // localStorage.removeItem("rememberMe");
+
+  // setUser(null);
+  // setIsAuthenticated(false);
 
   const forgotPassword = async (email: string): Promise<AuthResponse> => {
     try {
@@ -284,66 +324,66 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   // Simulation functions (replace with actual API calls)
-  const simulateLogin = async (
-    email: string,
-    password: string
-  ): Promise<AuthResponse> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Simulate successful login for demo
-        if (email && password) {
-          resolve({
-            success: true,
-            data: {
-              user: {
-                id: "1",
-                firstName: "John",
-                lastName: "Doe",
-                email: email,
-                phone: "",
-                businessName: "JD Freelance Services",
-                businessType: "freelancer",
-                avatar: null,
-                plan: "free",
-              },
-              token: "demo-jwt-token-" + Date.now(),
-            },
-          });
-        } else {
-          resolve({
-            success: false,
-            error: "Invalid email or password",
-          });
-        }
-      }, 1500);
-    });
-  };
+  // const simulateLogin = async (
+  //   email: string,
+  //   password: string
+  // ): Promise<AuthResponse> => {
+  //   return new Promise((resolve) => {
+  //     setTimeout(() => {
+  //       // Simulate successful login for demo
+  //       if (email && password) {
+  //         resolve({
+  //           success: true,
+  //           data: {
+  //             user: {
+  //               id: "1",
+  //               firstName: "John",
+  //               lastName: "Doe",
+  //               email: email,
+  //               phone: "",
+  //               businessName: "JD Freelance Services",
+  //               businessType: "freelancer",
+  //               avatar: null,
+  //               plan: "free",
+  //             },
+  //             token: "demo-jwt-token-" + Date.now(),
+  //           },
+  //         });
+  //       } else {
+  //         resolve({
+  //           success: false,
+  //           error: "Invalid email or password",
+  //         });
+  //       }
+  //     }, 1500);
+  //   });
+  // };
 
-  const simulateRegister = async (
-    userData: RegisterData
-  ): Promise<AuthResponse> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          success: true,
-          data: {
-            user: {
-              id: "1",
-              firstName: userData.firstName,
-              lastName: userData.lastName,
-              email: userData.email,
-              phone: userData.phone,
-              businessName: userData.businessName,
-              businessType: userData.businessType,
-              avatar: null,
-              plan: "free",
-            },
-            token: "demo-jwt-token-" + Date.now(),
-          },
-        });
-      }, 2000);
-    });
-  };
+  // const simulateRegister = async (
+  //   userData: RegisterData
+  // ): Promise<AuthResponse> => {
+  //   return new Promise((resolve) => {
+  //     setTimeout(() => {
+  //       resolve({
+  //         success: true,
+  //         data: {
+  //           user: {
+  //             id: "1",
+  //             firstName: userData.firstName,
+  //             lastName: userData.lastName,
+  //             email: userData.email,
+  //             phone: userData.phone,
+  //             businessName: userData.businessName,
+  //             businessType: userData.businessType,
+  //             avatar: null,
+  //             plan: "free",
+  //           },
+  //           token: "demo-jwt-token-" + Date.now(),
+  //         },
+  //       });
+  //     }, 2000);
+  //   });
+  // };
 
   const simulateForgotPassword = async (email: string): Promise<void> => {
     return new Promise((resolve) => {

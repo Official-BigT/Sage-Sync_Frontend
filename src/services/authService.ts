@@ -10,7 +10,7 @@ export interface RegisterData {
   businessType: string;
   password: string;
   agreeToTerms: boolean;
-  subscribeNewsletter: boolean;
+  subscribeToNewsletter: boolean;
 }
 
 export interface LoginData {
@@ -34,10 +34,19 @@ export const registerUser = async (
 
 export const loginUser = async (data: LoginData): Promise<ApiResponse> => {
   const res = await api.post<ApiResponse>("/auth/login", data);
-  return res.data;
+  return res.data; //cookies are auto-set by browser
 };
 
 export const verifyEmail = async (token: string): Promise<ApiResponse> => {
   const res = await api.get<ApiResponse>(`/auth/verify-email?token=${token}`);
   return res.data;
 };
+
+export const getCurrentUser = async (): Promise<ApiResponse> => {
+  const res = await api.get<ApiResponse>("/auth/me");
+  return res.data
+}
+export const refreshToken = async (): Promise<ApiResponse> => {
+  const res = await api.post<ApiResponse>("/auth/refresh");
+  return res.data
+}

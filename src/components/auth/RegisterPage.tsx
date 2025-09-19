@@ -197,7 +197,7 @@ export function RegisterPage() {
       businessType: formData.businessType,
       password: formData.password,
       agreeToTerms: formData.agreeToTerms,
-    subscribeNewsletter: formData.subscribeNewsletter
+    subscribeToNewsletter: formData.subscribeNewsletter
 
     });
   };
