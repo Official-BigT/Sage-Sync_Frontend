@@ -33,6 +33,7 @@ interface AuthResponse {
     token: string;
   };
   error?: string;
+  message?: string;
 }
 
 interface AuthContextType {
@@ -61,7 +62,7 @@ interface RegisterData {
   businessType: string;
   password: string;
   agreeToTerms: boolean;
-  subscribeToNewsletter: boolean;
+  subscribeToNewsletter: any;
 }
 
 interface AuthProviderProps {
@@ -208,7 +209,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (res.success !== false) {
         return {
           success: true,
-          error: "Registration successful. Please verify your email.",
+          message: "Registration successful. Please verify your email.",
         };
       } else {
         return {

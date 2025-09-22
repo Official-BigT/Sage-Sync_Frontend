@@ -50,8 +50,8 @@ interface FormData {
   businessType: string;
   password: string;
   confirmPassword: string;
-  agreeToTerms: boolean;
-  subscribeNewsletter: boolean;
+  agreeToTerms: any;
+  subscribeToNewsletter: any;
 }
 
 interface FormErrors {
@@ -86,8 +86,8 @@ export function RegisterPage() {
     businessType: "",
     password: "",
     confirmPassword: "",
-    agreeToTerms: false,
-    subscribeNewsletter: false,
+    agreeToTerms: "",
+    subscribeToNewsletter: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -197,7 +197,7 @@ export function RegisterPage() {
       businessType: formData.businessType,
       password: formData.password,
       agreeToTerms: formData.agreeToTerms,
-    subscribeToNewsletter: formData.subscribeNewsletter
+    subscribeToNewsletter: formData.subscribeToNewsletter
 
     });
   };
@@ -694,10 +694,10 @@ export function RegisterPage() {
                   <div className="flex items-center space-x-3">
                     <Checkbox
                       id="subscribeNewsletter"
-                      checked={formData.subscribeNewsletter}
+                      checked={formData.subscribeToNewsletter}
                       onCheckedChange={(checked) =>
                         handleInputChange(
-                          "subscribeNewsletter",
+                          "subscribeToNewsletter",
                           checked as boolean
                         )
                       }
