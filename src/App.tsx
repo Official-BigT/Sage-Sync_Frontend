@@ -8,7 +8,7 @@ import { CurrencyProvider } from "./contexts/CurrencyContext";
 import { ProtectedRoute, PublicRoute } from "./components/auth/ProtectedRoute";
 import { LoginPage } from "./components/auth/LoginPage";
 import { RegisterPage } from "./components/auth/RegisterPage";
-import { VerifyNotice } from "./components/auth/VerifyNotice";
+import { VerifyEmailPage } from "./pages/VerifyEmailPage";
 import { ForgotPasswordPage } from "./components/auth/ForgotPasswordPage";
 import { ResetPasswordPage } from "./components/auth/ResetPasswordPage";
 import Index from "./pages/Index";
@@ -44,11 +44,11 @@ const App = () => (
                 }
               />
               <Route
-                path="/verify-notice"
+                path="/verify-email"
                 element={
-                  <PublicRoute>
-                    <VerifyNotice />
-                  </PublicRoute>
+                  // <PublicRoute>
+                  <VerifyEmailPage />
+                  // </PublicRoute>
                 }
               />
               <Route
@@ -72,9 +72,9 @@ const App = () => (
               <Route
                 path="/"
                 element={
-                  // <ProtectedRoute>
+                  <ProtectedRoute>
                     <Index />
-                  // </ProtectedRoute>
+                  </ProtectedRoute>
                 }
               />
               <Route
