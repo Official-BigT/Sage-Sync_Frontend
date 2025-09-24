@@ -46,9 +46,9 @@ const App = () => (
               <Route
                 path="/verify-email"
                 element={
-                  <PublicRoute>
-                    <VerifyEmailPage />
-                  </PublicRoute>
+                  // <PublicRoute>
+                  <VerifyEmailPage />
+                  // </PublicRoute>
                 }
               />
               <Route
