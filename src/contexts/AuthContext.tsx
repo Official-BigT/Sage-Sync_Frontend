@@ -22,6 +22,10 @@ interface User {
   phone: string;
   businessName: string;
   businessType: string;
+  monthlyGoal: number;
+  currentEarnings: number;
+  totalInvoices: number;
+  paidInvoices: number;
   avatar: string | null;
   plan: "free" | "pro";
 }

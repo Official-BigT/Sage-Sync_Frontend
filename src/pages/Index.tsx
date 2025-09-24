@@ -37,10 +37,10 @@ const Index = () => {
   const [userData, setUserData] = useState({
     name: "Triumph Anya-Nga",
     business: "OF D S0UTH CTO/CEO",
-    monthlyGoal: 100000000,
-    currentEarnings: 1500000,
-    totalInvoices: 1000,
-    paidInvoices: 920,
+    monthlyGoal: 0,
+    currentEarnings: 0,
+    totalInvoices: 0,
+    paidInvoices: 0,
     plan: "free" as "free" | "pro",
   });
 
@@ -50,10 +50,10 @@ const Index = () => {
       setUserData({
         name: `${user.firstName} ${user.lastName}`,
         business: user.businessName,
-        monthlyGoal: 5000,
-        currentEarnings: 3200,
-        totalInvoices: 12,
-        paidInvoices: 10,
+        monthlyGoal: user.monthlyGoal,
+        currentEarnings: user.currentEarnings,
+        totalInvoices: user.totalInvoices,
+        paidInvoices: user.paidInvoices,
         plan: user.plan,
       });
     }
