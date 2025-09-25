@@ -35,8 +35,8 @@ const Index = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [userData, setUserData] = useState({
-    name: "Triumph Anya-Nga",
-    business: "OF D S0UTH CTO/CEO",
+    name: "",
+    business: "",
     monthlyGoal: 0,
     currentEarnings: 0,
     totalInvoices: 0,
