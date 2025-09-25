@@ -44,11 +44,11 @@ interface BusinessCardProps {
 const BusinessCard = ({ user }: BusinessCardProps) => {
   const [cardData, setCardData] = useState({
     name: user.name,
-    title: "Full-Stack Developer",
+    title: "",
     business: user.business,
-    email: "unknownt@ods.com",
-    phone: "+1 (555) 123-4567",
-    website: "www.ods.com",
+    email: "unknownt@email.com",
+    phone: "+0 (234) 567-8901",
+    website: "www.unknown.com",
     address: "Lagos, Nigeria",
     bio: "Passionate about creating beautiful digital experiences that drive results.",
     theme: "modern",
