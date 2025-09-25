@@ -109,7 +109,7 @@ export function RegisterPage() {
   const { mutate: registerMutation, isPending } = useMutation({
     mutationFn: registerUser,
     onSuccess: (res) => {
-      if (res.success) {
+      if (res.status) {
         toast.success(
           "Registration successful! Please check your email to verify your account."
         );

@@ -20,10 +20,10 @@ export const VerifyEmailPage = () => {
     }
 
     const verify = async () => {
-      console.log("📡 Calling backend /auth/verify-email with token:", token);
+      // console.log("📡 Calling backend /auth/verify-email with token:", token);
       try {
         const res = await verifyEmail(token);
-        console.log("✅ Backend response:", res);
+        // console.log("✅ Backend response:", res);
 
         if (res.success) {
           setStatus("success");
