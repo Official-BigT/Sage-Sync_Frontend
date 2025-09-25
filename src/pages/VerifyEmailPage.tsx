@@ -27,7 +27,7 @@ export const VerifyEmailPage = () => {
 
         if (res.success) {
           setStatus("success");
-          setMessage("Your email has been verified! Redirecting to login...");
+          setMessage(res.message || "Your email has been verified! Redirecting to login...");
           setTimeout(() => navigate("/login"), 3000); // redirect after 3s
         } else {
           setStatus("error");
