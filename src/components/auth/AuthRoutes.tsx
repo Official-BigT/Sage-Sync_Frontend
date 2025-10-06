@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 
 interface ProtectedRouteProps {
@@ -12,7 +12,6 @@ interface PublicRouteProps {
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading } = useAuth();
-  const location = useLocation();
 
   // Show loading spinner while checking authentication
   if (isLoading) {
@@ -29,7 +28,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
     // Save the attempted location for redirecting after login
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/login" replace />;
   }
 
   // Render the protected component
@@ -38,7 +37,6 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
 export function PublicRoute({ children }: PublicRouteProps) {
   const { isAuthenticated, isLoading } = useAuth();
-  const location = useLocation();
 
   // Show loading spinner while checking authentication
   if (isLoading) {
@@ -55,8 +53,7 @@ export function PublicRoute({ children }: PublicRouteProps) {
   // Redirect to dashboard if already authenticated
   if (isAuthenticated) {
     // Get the intended destination from location state, or default to dashboard
-    const from = location.state?.from?.pathname || "/";
-    return <Navigate to={from} replace />;
+    return <Navigate to="/" replace />;
   }
 
   // Render the public component (login, register, etc.)

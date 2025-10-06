@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { CurrencyProvider } from "./contexts/CurrencyContext";
-import { ProtectedRoute, PublicRoute } from "./components/auth/ProtectedRoute";
+import { ProtectedRoute, PublicRoute } from "./components/auth/AuthRoutes";
 import { LoginPage } from "./components/auth/LoginPage";
 import { RegisterPage } from "./components/auth/RegisterPage";
 import { VerifyEmailPage } from "./pages/VerifyEmailPage";

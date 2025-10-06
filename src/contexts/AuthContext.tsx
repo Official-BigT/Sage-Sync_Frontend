@@ -93,32 +93,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
     checkAuthStatus();
   }, []);
 
+  // Only check /me if token exists
   const checkAuthStatus = async (): Promise<void> => {
-    try {
-      setIsLoading(true);
+    setIsLoading(true);
+    const token = localStorage.getItem("accessToken");
 
-      const res = await getCurrentUser(); //calls /auth/me
+    if (!token) {
+      setUser(null);
+      setIsAuthenticated(false);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const res = await getCurrentUser();
       if (res.data) {
         setUser(res.data);
         setIsAuthenticated(true);
-      }
-    } catch (error) {
-      try {
-        // try to refresh token if access expired
-        await refreshToken();
-        const res = await getCurrentUser();
-        if (res.data) {
-          setUser(res.data);
-          setIsAuthenticated(true);
-        }
-      } catch (refreshErr) {
+      } else {
         setUser(null);
         setIsAuthenticated(false);
       }
+    } catch (err) {
+      setUser(null);
+      setIsAuthenticated(false);
     } finally {
       setIsLoading(false);
     }
-
     // Obsolete localstorage logic
     // try {
     //   // Check for stored auth token
@@ -156,23 +157,34 @@ export function AuthProvider({ children }: AuthProviderProps) {
     });
   };
 
+  // Simplified login - sets token + user directly
   const login = async (
     email: string,
-    password: string,
-    rememberMe = false
+    password: string
+    // rememberMe = false
   ): Promise<AuthResponse> => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-
       const response = await loginUser({ email, password });
-      if (response) {
-        await checkAuthStatus(); //load user into context
+      if (response?.data) {
+        const { token, user } = response.data;
+
+        // Save token for persistent auth
+        if (token) {
+          localStorage.setItem("accessToken", token);
+        }
+        setUser(user);
+        setIsAuthenticated(true);
+
         return { success: true };
       } else {
         return { success: false, error: "Login failed" };
       }
     } catch (error) {
-      return { success: false, error: "Login failed, Please try again." };
+      return {
+        success: false,
+        error: "Login failed, Invalid credentials please try again.",
+      };
     } finally {
       setIsLoading(false);
     }
@@ -258,6 +270,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }*/
 
   const logout = (): void => {
+    localStorage.removeItem("accessToken");
     setUser(null);
     setIsAuthenticated(false);
     // Optionally call backend /auth/logout to clear cookies

@@ -20,9 +20,13 @@ export interface LoginData {
 
 export interface ApiResponse<T = any> {
   success: boolean;
-  status:  string;
+  status: string;
   message: string;
   data?: T;
+  tokens?: {
+    accessToken: string;
+    refreshToken: string;
+  };
 }
 
 // --- Functions ---
@@ -35,7 +39,12 @@ export const registerUser = async (
 
 export const loginUser = async (data: LoginData): Promise<ApiResponse> => {
   const res = await api.post<ApiResponse>("/auth/login", data);
-  return res.data; //cookies are auto-set by browser
+
+  const { accessToken, refreshToken } = res.data.tokens || {};
+  if (accessToken) localStorage.setItem("accessToken", accessToken);
+  if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
+
+  return res.data; //cookies are auto-set by browser for httpsOnly
 };
 
 export const verifyEmail = async (token: string): Promise<ApiResponse> => {
@@ -44,10 +53,35 @@ export const verifyEmail = async (token: string): Promise<ApiResponse> => {
 };
 
 export const getCurrentUser = async (): Promise<ApiResponse> => {
-  const res = await api.get<ApiResponse>("/auth/me");
-  return res.data
-}
+  const token = localStorage.getItem("accessToken");
+  const res = await api.get<ApiResponse>("/auth/me", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+};
 export const refreshToken = async (): Promise<ApiResponse> => {
-  const res = await api.post<ApiResponse>("/auth/refresh");
-  return res.data
-}
+  const refreshToken = localStorage.getItem("refreshToken");
+  if (!refreshToken) throw new Error("No refresh token stored");
+
+  const res = await api.post<ApiResponse>("/auth/refresh", {
+    refreshToken,
+  });
+  const { accessToken, refreshToken: newRefresh } = res.data.tokens || {};
+
+  if (accessToken) {
+    localStorage.setItem("accessToken", accessToken);
+  }
+
+  if (newRefresh) {
+    localStorage.setItem("refreshToken", newRefresh);
+  }
+
+  return res.data;
+};
+
+export const logoutUser = async (): Promise<void> => {
+  await api.post("/auth/logout");
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+  window.location.href = "/login";
+};
