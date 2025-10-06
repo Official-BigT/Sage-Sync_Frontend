@@ -12,6 +12,7 @@ import {
   getCurrentUser,
   refreshToken,
 } from "@/services/authService";
+import { error } from "console";
 
 // Type definitions
 interface User {
@@ -95,19 +96,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Only check /me if token exists
   const checkAuthStatus = async (): Promise<void> => {
-    setIsLoading(true);
-    const token = localStorage.getItem("accessToken");
-
-    if (!token) {
-      setUser(null);
-      setIsAuthenticated(false);
-      setIsLoading(false);
-      return;
-    }
-
     try {
+      setIsLoading(true);
+      const token = localStorage.getItem("accessToken");
+
+      if (!token) {
+        setUser(null);
+        setIsAuthenticated(false);
+        return;
+      }
+
       const res = await getCurrentUser();
-      if (res.data) {
+      if (res?.data) {
         setUser(res.data);
         setIsAuthenticated(true);
       } else {
@@ -115,6 +115,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setIsAuthenticated(false);
       }
     } catch (err) {
+      console.error("Auth check failed:", error);
       setUser(null);
       setIsAuthenticated(false);
     } finally {
