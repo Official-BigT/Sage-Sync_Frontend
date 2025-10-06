@@ -115,7 +115,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setIsAuthenticated(false);
       }
     } catch (err) {
-      console.error("Auth check failed:", error);
+      // console.error("Auth check failed:", error);
       setUser(null);
       setIsAuthenticated(false);
     } finally {
