@@ -43,14 +43,14 @@ interface BusinessCardProps {
 
 const BusinessCard = ({ user }: BusinessCardProps) => {
   const [cardData, setCardData] = useState({
-    name: user.name,
-    title: "",
+    name: user?.name,
+    title: "CEO",
     business: user.business,
-    email: "unknownt@email.com",
+    email: "unknown@email.com",
     phone: "+0 (234) 567-8901",
     website: "www.unknown.com",
-    address: "Lagos, Nigeria",
-    bio: "Passionate about creating beautiful digital experiences that drive results.",
+    address: "Earth",
+    bio: "Creating digital solutions and experiences that drive results.",
     theme: "modern",
     primaryColor: "#1e40af",
     accentColor: "#10b981",
