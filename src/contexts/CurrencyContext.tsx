@@ -197,6 +197,10 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({
       decimalSeparator,
     } = currency;
 
+    // Guard: handle undefined, null, NaN
+    if (typeof amount !== "number" || isNaN(amount)) {
+      return showSymbol ? `${symbol}0.00` : "0.00";
+    }
     // Format the number
     const formattedNumber = amount.toLocaleString("en-US", {
       minimumFractionDigits: decimalPlaces,
@@ -210,11 +214,15 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({
 
     // Add symbol if requested
     if (showSymbol) {
-      if (position === "before") {
-        formatted = `${symbol}${formatted}`;
-      } else {
-        formatted = `${formatted}${symbol}`;
-      }
+      formatted =
+        position === "before"
+          ? `${symbol}${formatted}`
+          : `${formatted}${symbol}`;
+      // if (position === "before") {
+      //   formatted = `${symbol}${formatted}`;
+      // } else {
+      //   formatted = `${formatted}${symbol}`;
+      // }
     }
 
     return formatted;

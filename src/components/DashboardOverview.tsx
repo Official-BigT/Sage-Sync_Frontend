@@ -33,15 +33,25 @@ interface DashboardOverviewProps {
 
 const DashboardOverview = ({ user, isPro = false }: DashboardOverviewProps) => {
   const { formatCurrency } = useCurrency();
-  const goalProgress = (user.currentEarnings / user.monthlyGoal) * 100;
-  const unpaidInvoices = user.totalInvoices - user.paidInvoices;
+  // ✅ Safe guards for calculations
+  // const monthlyGoal = user?.monthlyGoal ?? 0;
+  // const currentEarnings = user?.currentEarnings ?? 0;
+  const totalInvoices = user?.totalInvoices ?? 0;
+  const paidInvoices = user?.paidInvoices ?? 0;
+  const successRate =
+    totalInvoices > 0 ? (paidInvoices / totalInvoices) * 100 : 0;
+
+  const goalProgress = user.monthlyGoal
+    ? (user.currentEarnings / user.monthlyGoal) * 100
+    : 0;
+  const unpaidInvoices = totalInvoices - paidInvoices;
 
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
       <div className="bg-gradient-to-r from-blue-600 to-emerald-500 rounded-xl p-4 sm:p-6 text-white">
         <h2 className="text-xl sm:text-2xl font-bold mb-2">
-          Welcome back, {user.name}! 👋
+          Welcome back, {user?.name}! 👋
         </h2>
         <p className="text-sm sm:text-base text-blue-100">
           Here's what's happening with your finances today.
@@ -57,10 +67,10 @@ const DashboardOverview = ({ user, isPro = false }: DashboardOverviewProps) => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatCurrency(user.currentEarnings)}
+              {formatCurrency(user?.currentEarnings ?? 0)}
             </div>
             <div className="text-xs text-muted-foreground mb-2">
-              of {formatCurrency(user.monthlyGoal)} goal
+              of {formatCurrency(user?.monthlyGoal ?? 0)} goal
             </div>
             <Progress value={goalProgress} className="h-2" />
             <p className="text-xs text-emerald-600 mt-1">
@@ -77,7 +87,7 @@ const DashboardOverview = ({ user, isPro = false }: DashboardOverviewProps) => {
             <FileText className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{user.totalInvoices}</div>
+            <div className="text-2xl font-bold">{user?.totalInvoices || 0}</div>
             <p className="text-xs text-muted-foreground">This month</p>
           </CardContent>
         </Card>
@@ -89,11 +99,11 @@ const DashboardOverview = ({ user, isPro = false }: DashboardOverviewProps) => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-emerald-600">
-              {user.paidInvoices}
+              {user?.paidInvoices || 0}
             </div>
             <p className="text-xs text-muted-foreground">
-              {((user.paidInvoices / user.totalInvoices) * 100).toFixed(0)}%
-              success rate
+              {/* {((user.paidInvoices / user.totalInvoices) * 100).toFixed(0) || 0} */}
+              {successRate.toFixed(0)}% success rate
             </p>
           </CardContent>
         </Card>
