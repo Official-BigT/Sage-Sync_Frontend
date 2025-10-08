@@ -31,7 +31,7 @@ interface InvoiceItem {
 }
 
 const InvoiceGenerator = () => {
-  const { currency, formatCurrency, availableCurrencies } = useCurrency();
+  const { currency, formatCurrency, availableCurrencies, setCurrency } = useCurrency();
 
   const [invoiceData, setInvoiceData] = useState({
     invoiceNumber: "INV-001",
@@ -161,7 +161,7 @@ const InvoiceGenerator = () => {
                         (curr) => curr.code === value
                       );
                       if (selectedCurrency) {
-                        currencyContext?.setCurrency(selectedCurrency);
+                        setCurrency(selectedCurrency);
                       }
                     }}
                   >

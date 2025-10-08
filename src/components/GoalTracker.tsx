@@ -234,11 +234,11 @@ const GoalTracker: React.FC<GoalTrackerProps> = ({ user, isPro = false }) => {
                         <CardDescription>
                           {goal.type === "revenue"
                             ? formatCurrency(goal.current)
-                            : goal.current.toLocaleString()}{" "}
+                            : (goal.current ?? 0).toLocaleString()}{" "}
                           of{" "}
                           {goal.type === "revenue"
                             ? formatCurrency(goal.target)
-                            : goal.target.toLocaleString()}
+                            : (goal.target ?? 0).toLocaleString()}
                         </CardDescription>
                       </div>
                     </div>
@@ -264,7 +264,7 @@ const GoalTracker: React.FC<GoalTrackerProps> = ({ user, isPro = false }) => {
                     <div className="flex justify-between text-sm mb-2">
                       <span>Progress</span>
                       <span className="font-medium">
-                        {progress.toFixed(1)}%
+                        {(progress || 0).toFixed(0)}%
                       </span>
                     </div>
                     <Progress value={Math.min(progress, 100)} className="h-3" />
