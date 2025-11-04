@@ -26,6 +26,7 @@ import {
   Users,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
+import axios from "axios";
 
 interface FormData {
   email: string;
@@ -38,7 +39,11 @@ interface FormErrors {
   password?: string;
   general?: string;
 }
-
+declare global {
+  interface Window {
+    google: any;
+  }
+}
 export function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -111,6 +116,50 @@ export function LoginPage() {
       setIsLoading(false);
     }
   };
+
+  const handleGoogleResponse = async (response: { credential?: string }) => {
+    const credential = response.credential;
+    if (!credential) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const { data } = await axios.post(
+        "http://localhost:8080/api/auth/google",
+        { credential }
+      );
+      localStorage.setItem("accessToken", data.accessToken);
+      localStorage.setItem("refreshToken", data.refreshToken);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      alert(data.message || "Logged in successfully!");
+      window.location.href = "/";
+    } catch (err: any) {
+      console.error("Google login failed", err.response?.data || err);
+      alert("Google login failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = () => {
+    if (!window.google) {
+      alert("Google SDK not loaded yet");
+      return;
+    }
+
+    setIsLoading(true);
+
+    window.google.accounts.id.initialize({
+      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID as string,
+      callback: handleGoogleResponse,
+    });
+
+    // Opens the Google account selection popup
+      window.google.accounts.id.prompt();
+    };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50 relative overflow-hidden">
@@ -305,6 +354,7 @@ export function LoginPage() {
                 <Button
                   variant="outline"
                   disabled={isLoading}
+                  onClick={handleGoogleLogin}
                   className="h-12 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all duration-200"
                 >
                   <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">

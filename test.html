@@ -1,0 +1,10 @@
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+  window.onload = () => {
+    google.accounts.id.initialize({
+      client_id: "YOUR_CLIENT_ID.apps.googleusercontent.com",
+      callback: (r)=>console.log(r)
+    });
+    google.accounts.id.prompt();
+  };
+</script>
