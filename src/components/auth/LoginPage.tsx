@@ -126,8 +126,9 @@ export function LoginPage() {
 
     try {
       const { data } = await axios.post(
-        "http://localhost:8080/api/auth/google",
-        { credential }
+        `${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/google`,
+        { credential },
+        { withCredentials: true }
       );
       localStorage.setItem("accessToken", data.accessToken);
       localStorage.setItem("refreshToken", data.refreshToken);
@@ -157,9 +158,8 @@ export function LoginPage() {
     });
 
     // Opens the Google account selection popup
-      window.google.accounts.id.prompt();
-    };
-
+    window.google.accounts.id.prompt();
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50 relative overflow-hidden">
