@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import axios from "axios";
+import { useToast } from "@/hooks/use-toast";
 
 interface FormData {
   email: string;
@@ -117,6 +118,8 @@ export function LoginPage() {
     }
   };
 
+  const { toast } = useToast();
+
   const handleGoogleResponse = async (response: { credential?: string }) => {
     const credential = response.credential;
     if (!credential) {
@@ -126,7 +129,7 @@ export function LoginPage() {
 
     try {
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-      // console.log("API_BASE_URL:", API_BASE_URL); 
+      // console.log("API_BASE_URL:", API_BASE_URL);
       // //helpful to debug in browser
 
       const { data } = await axios.post(
@@ -134,15 +137,44 @@ export function LoginPage() {
         { credential },
         { withCredentials: true }
       );
+      // Save token + user data
       localStorage.setItem("accessToken", data.accessToken);
       localStorage.setItem("refreshToken", data.refreshToken);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      alert(data.message || "Logged in successfully!");
-      window.location.href = "/";
+      // alert(data.message || "Logged in successfully!");
+      if (!data.user.isProfileComplete) {
+        toast({
+          title: "Welcome",
+          description:
+            "Account created successfully. PLease complete your profile to continue",
+          variant: "default",
+          duration: 4000,
+        });
+        // Redirect to profile completion page
+        setTimeout(() => {
+          window.location.href = "/complete-profile";
+        }, 1500);
+      } else {
+        toast({
+          title:"Login Successful 🎉",
+          description: data.message ||
+            "Welcome back to SageSync",
+          variant: "default",
+          duration: 4000,
+        })
+        // Redirect to logged in user's dashboard
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 1500);
+      }
     } catch (err: any) {
       console.error("Google login failed", err.response?.data || err);
-      alert("Google login failed");
+      toast({
+        title: "Google login failed ❌",
+        description: err.response?.data?.message || "Something went wrong. Please try again.",
+        variant: "destructive"
+      })
     } finally {
       setIsLoading(false);
     }
