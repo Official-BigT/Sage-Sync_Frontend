@@ -125,8 +125,11 @@ export function LoginPage() {
     }
 
     try {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+      console.log("API_BASE_URL:", API_BASE_URL); //helpful to debug in browser
+
       const { data } = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/google`,
+        `${API_BASE_URL}/api/v1/auth/google`,
         { credential },
         { withCredentials: true }
       );
