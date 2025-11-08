@@ -143,38 +143,32 @@ export function LoginPage() {
       localStorage.setItem("user", JSON.stringify(data.user));
 
       // alert(data.message || "Logged in successfully!");
-      if (!data.user.isProfileComplete) {
+      if (data.user.isProfileComplete) {
         toast({
-          title: "Welcome",
-          description:
-            "Account created successfully. PLease complete your profile to continue",
+          title: `Welcome back, ${data.user.firstName}!`,
+          description: data.message || "Welcome back to SageSync",
           variant: "default",
           duration: 4000,
         });
-        // Redirect to profile completion page
-        setTimeout(() => {
-          window.location.href = "/complete-profile";
-        }, 1500);
+        window.location.href = "/";
       } else {
         toast({
-          title:"Login Successful 🎉",
-          description: data.message ||
-            "Welcome back to SageSync",
+          title: `Welcome, ${data.user.firstName || "there"}! Please complete your profile.`,
           variant: "default",
           duration: 4000,
-        })
-        // Redirect to logged in user's dashboard
-        setTimeout(() => {
+        });
+        localStorage.setItem("incompleteProfile", "true")
           window.location.href = "/";
-        }, 1500);
       }
     } catch (err: any) {
       console.error("Google login failed", err.response?.data || err);
       toast({
         title: "Google login failed ❌",
-        description: err.response?.data?.message || "Something went wrong. Please try again.",
-        variant: "destructive"
-      })
+        description:
+          err.response?.data?.message ||
+          "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
