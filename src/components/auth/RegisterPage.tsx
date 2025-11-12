@@ -284,10 +284,7 @@ export function RegisterPage() {
           variant: "default",
           duration: 4000,
         });
-        // Redirect to profile completion page
-        setTimeout(() => {
-          window.location.href = "/complete-profile";
-        }, 1500);
+          window.location.href = "/";
       } else {
         toast({
           title: "Login Successful 🎉",
@@ -901,19 +898,6 @@ export function RegisterPage() {
                   </svg>
                   Sign in with Apple
                 </Button>
-              </div>
-
-              {/* Sign Up Link */}
-              <div className="text-center mt-8">
-                <p className="text-sm text-gray-600">
-                  Don't have an account?{" "}
-                  <Link
-                    to="/register"
-                    className="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors"
-                  >
-                    Sign up for free
-                  </Link>
-                </p>
               </div>
             </CardContent>
           </Card>

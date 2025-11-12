@@ -39,9 +39,10 @@ import {
   X,
   Check,
 } from "lucide-react";
+import { completeProfile } from "@/services/authService";
 
 const ProfilePage = () => {
-  const { user, updateProfile, logout } = useAuth();
+  const { user, updateProfile, logout, checkAuthStatus } = useAuth();
   const { currency, setCurrency, availableCurrencies } = useCurrency();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -67,20 +68,32 @@ const ProfilePage = () => {
   const handleSave = async () => {
     setIsLoading(true);
     try {
-      const response = await updateProfile(formData);
+      let response;
+
+      if (user?.authProvider === "google" && !user?.isProfileComplete) {
+        // Google user completing profile for first time
+        response = await completeProfile(formData);
+      } else {
+        // Manual user updating profile
+        response = await updateProfile(formData);
+      }
+
       if (response.success) {
         toast({
-          title: "Profile Updated",
-          description: "Your profile has been successfully updated.",
+          title: "Profile updated",
+          description: "Your profile has been successfully updated",
         });
+        // Re-sync with context so IncompleteProfile disappears
+        await checkAuthStatus();
+
+        localStorage.setItem("user", JSON.stringify(response.user || {}))
         setIsEditing(false);
       } else {
         toast({
-          title: "Update Failed",
-          description:
-            response.error || "Failed to update profile. Please try again.",
-          variant: "destructive",
-        });
+          title: "Update failed",
+          description: response.error || "Failed to update profile,Please try again",
+          variant: "destructive"
+        })
       }
     } catch (error) {
       toast({
@@ -183,7 +196,7 @@ const ProfilePage = () => {
                   className="w-full sm:w-auto h-9 px-4 text-sm"
                 >
                   <Edit className="h-3 w-3 mr-1" />
-                  Edit Profile
+                  Update Profile
                 </Button>
               )}
             </div>

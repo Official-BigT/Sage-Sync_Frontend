@@ -13,10 +13,11 @@ import {
   refreshToken,
 } from "@/services/authService";
 import { error } from "console";
+import api from "@/services/api";
 
 // Type definitions
 interface User {
-  id: string;
+  _id: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -27,18 +28,28 @@ interface User {
   currentEarnings: number;
   totalInvoices: number;
   paidInvoices: number;
-  avatar: string | null;
+  authProvider: "local" | "google" | "apple";
+  avatar?: string | null; 
+  isProfileComplete: boolean;
+  isActive: boolean;
+  emailVerified: boolean;
   plan: "free" | "pro";
 }
 
 interface AuthResponse {
   success: boolean;
-  data?: {
-    user: User;
-    token: string;
-  };
+  message?: string,
   error?: string;
-  message?: string;
+  user?: User;
+  accessToken?: string;
+  refreshToken?: string;
+  token?: string;
+  data?: {
+    user?: User;
+    tokens?: {
+      accessToken?: string;
+    }
+  }
 }
 
 interface AuthContextType {
@@ -67,7 +78,7 @@ interface RegisterData {
   businessType: string;
   password: string;
   agreeToTerms: boolean;
-  subscribeToNewsletter: any;
+  subscribeToNewsletter: boolean;
 }
 
 interface AuthProviderProps {
@@ -167,8 +178,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setIsLoading(true);
     try {
       const response = await loginUser({ email, password });
-      if (response?.data) {
-        const { token, user } = response.data;
+      if (response?.user || response?.data?.user) {
+        const token = response.tokens?.accessToken || response.data?.tokens?.accessToken || "";
 
         // Save token for persistent auth
         if (token) {
@@ -177,7 +188,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setUser(user);
         setIsAuthenticated(true);
 
-        return { success: true };
+        return { success: true, user, accessToken: token };
       } else {
         return { success: false, error: "Login failed" };
       }
@@ -315,32 +326,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const updateProfile = async (
-    profileData: Partial<User>
-  ): Promise<AuthResponse> => {
-    try {
-      setIsLoading(true);
+  // Simulate update profile
+  // const updateProfile = async (
+  //   profileData: Partial<User>
+  // ): Promise<AuthResponse> => {
+  //   try {
+  //     setIsLoading(true);
 
-      // Simulate API call to update profile
-      const response = await simulateUpdateProfile(profileData);
+  //     // Simulate API call to update profile
+  //     const response = await simulateUpdateProfile(profileData);
 
-      if (response.success && response.data) {
-        const updatedUser = { ...user, ...response.data } as User;
-        setUser(updatedUser);
-        localStorage.setItem("userData", JSON.stringify(updatedUser));
-        return { success: true };
-      } else {
-        return { success: false, error: response.error };
-      }
-    } catch (error) {
-      return {
-        success: false,
-        error: "Failed to update profile. Please try again.",
-      };
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //     if (response.success && response.data) {
+  //       const updatedUser = { ...user, ...response.data } as User;
+  //       setUser(updatedUser);
+  //       localStorage.setItem("userData", JSON.stringify(updatedUser));
+  //       return { success: true };
+  //     } else {
+  //       return { success: false, error: response.error };
+  //     }
+  //   } catch (error) {
+  //     return {
+  //       success: false,
+  //       error: "Failed to update profile. Please try again.",
+  //     };
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   // Simulation functions (replace with actual API calls)
   // const simulateLogin = async (
@@ -403,6 +415,35 @@ export function AuthProvider({ children }: AuthProviderProps) {
   //     }, 2000);
   //   });
   // };
+
+  const updateProfile = async (profileData: Partial<User>): Promise<AuthResponse> => {
+  try {
+    setIsLoading(true);
+    const token = localStorage.getItem("accessToken");
+
+    // Make the API call to backend
+    const res = await api.patch<AuthResponse>("/auth/update-profile", profileData, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (res.data?.success) {
+      const updatedUser = res.data.user || res.data.data?.user;
+      if (updatedUser) {
+        setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+      }
+
+      return { success: true, user: updatedUser };
+    } else {
+      return { success: false, error: res.data?.error || "Profile update failed" };
+    }
+  } catch (error) {
+    console.error("Update profile error:", error);
+    return { success: false, error: "Failed to update profile. Please try again." };
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const simulateForgotPassword = async (email: string): Promise<void> => {
     return new Promise((resolve) => {

@@ -28,6 +28,7 @@ import ExpenseTracker from "@/components/ExpenseTracker";
 import GoalTracker from "@/components/GoalTracker";
 import BusinessCard from "@/components/BusinessCard";
 import { useAuth } from "@/contexts/AuthContext";
+import IncompleteProfile from "@/hooks/IncompleteProfile";
 
 const Index = () => {
   const { user, logout } = useAuth();
@@ -131,7 +132,8 @@ const Index = () => {
           </div>
         </div>
       </header>
-
+      {/* Complete profile for OAuth users */}
+      <IncompleteProfile/>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs
           value={activeTab}

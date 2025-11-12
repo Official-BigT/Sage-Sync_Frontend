@@ -32,7 +32,7 @@ export default function CompleteProfilePage() {
     "Online Store",
     "Other",
   ];
-  
+
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,7 +111,7 @@ export default function CompleteProfilePage() {
               </SelectItem>
             ))}
           </SelectContent>
-        </Select>
+        </Select>   
 
         <label className="flex items-center space-x-2">
           <input

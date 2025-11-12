@@ -27,6 +27,7 @@ export interface ApiResponse<T = any> {
     accessToken: string;
     refreshToken: string;
   };
+  user: any;
 }
 
 // --- Functions ---
@@ -76,8 +77,32 @@ export const refreshToken = async (): Promise<ApiResponse> => {
     localStorage.setItem("refreshToken", newRefresh);
   }
 
+
   return res.data;
 };
+
+// Google users profile completion
+export const completeProfile = async (
+  profileData: Partial<RegisterData>
+): Promise<ApiResponse> => {
+  const token = localStorage.getItem("accessToken");
+  const res = await api.patch<ApiResponse>("auth/complete-profile", profileData, {
+    headers: {Authorization: `Bearer ${token}`},
+  });
+  return res.data
+};
+
+// Manual users profile update
+export const updateProfile = async (
+  profileData: Partial<RegisterData>
+): Promise<ApiResponse> => {
+  const token = localStorage.getItem("accessToken");
+  const res = await api.patch<ApiResponse>("/auth/update-profile", profileData, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+};
+
 
 export const logoutUser = async (): Promise<void> => {
   await api.post("/auth/logout");
