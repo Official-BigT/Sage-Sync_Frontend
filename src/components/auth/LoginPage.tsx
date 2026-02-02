@@ -40,9 +40,18 @@ interface FormErrors {
   password?: string;
   general?: string;
 }
+
+/** Minimal type for Google Identity Services (One Tap / Sign-In) */
+interface GoogleAccountsId {
+  initialize: (config: {
+    client_id: string;
+    callback: (response: { credential?: string }) => void;
+  }) => void;
+  prompt: () => void;
+}
 declare global {
   interface Window {
-    google: any;
+    google?: { accounts: { id: GoogleAccountsId } };
   }
 }
 export function LoginPage() {
@@ -129,43 +138,59 @@ export function LoginPage() {
 
     try {
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-      // console.log("API_BASE_URL:", API_BASE_URL);
-      // //helpful to debug in browser
-
-      const { data } = await axios.post(
+      const { data } = await axios.post<{
+        status?: string;
+        data?: Record<string, unknown>;
+        tokens?: { accessToken: string; refreshToken: string };
+        message?: string;
+      }>(
         `${API_BASE_URL}/api/v1/auth/google`,
         { credential },
         { withCredentials: true }
       );
-      // Save token + user data
-      localStorage.setItem("accessToken", data.accessToken);
-      localStorage.setItem("refreshToken", data.refreshToken);
-      localStorage.setItem("user", JSON.stringify(data.user));
 
-      // alert(data.message || "Logged in successfully!");
-      if (data.user.isProfileComplete) {
+      const tokens = data?.tokens;
+      const userPayload = data?.data;
+      if (!tokens?.accessToken || !userPayload) {
         toast({
-          title: `Welcome back, ${data.user.firstName}!`,
+          title: "Google login failed ❌",
+          description: "Invalid response from server.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      localStorage.setItem("accessToken", tokens.accessToken);
+      localStorage.setItem("refreshToken", tokens.refreshToken);
+      localStorage.setItem("user", JSON.stringify(userPayload));
+
+      const firstName = (userPayload.firstName as string) || "there";
+      const isProfileComplete = (userPayload.isProfileComplete as boolean) ?? false;
+
+      if (isProfileComplete) {
+        toast({
+          title: `Welcome back, ${firstName}!`,
           description: data.message || "Welcome back to SageSync",
           variant: "default",
           duration: 4000,
         });
-        window.location.href = "/";
       } else {
         toast({
-          title: `Welcome, ${data.user.firstName || "there"}! Please complete your profile.`,
+          title: `Welcome, ${firstName}! Please complete your profile.`,
+          description: data.message || "Complete your profile to get started.",
           variant: "default",
           duration: 4000,
         });
-        localStorage.setItem("incompleteProfile", "true")
-          window.location.href = "/";
+        localStorage.setItem("incompleteProfile", "true");
       }
-    } catch (err: any) {
-      console.error("Google login failed", err.response?.data || err);
+      window.location.href = "/";
+    } catch (err: unknown) {
+      const axErr = err as { response?: { data?: { message?: string } } };
+      console.error("Google login failed", axErr?.response?.data ?? err);
       toast({
         title: "Google login failed ❌",
         description:
-          err.response?.data?.message ||
+          axErr?.response?.data?.message ||
           "Something went wrong. Please try again.",
         variant: "destructive",
       });

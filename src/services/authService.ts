@@ -77,19 +77,18 @@ export const refreshToken = async (): Promise<ApiResponse> => {
     localStorage.setItem("refreshToken", newRefresh);
   }
 
-
   return res.data;
 };
 
-// Google users profile completion
+// Google (and OAuth) profile completion — PATCH /auth/complete-profile (user from token)
 export const completeProfile = async (
-  profileData: Partial<RegisterData>
+  profileData: Partial<RegisterData> & { isActive?: boolean }
 ): Promise<ApiResponse> => {
-  const token = localStorage.getItem("accessToken");
-  const res = await api.patch<ApiResponse>("auth/complete-profile", profileData, {
-    headers: {Authorization: `Bearer ${token}`},
-  });
-  return res.data
+  const res = await api.patch<ApiResponse>(
+    "/auth/complete-profile",
+    profileData
+  );
+  return res.data;
 };
 
 // Manual users profile update
@@ -97,16 +96,24 @@ export const updateProfile = async (
   profileData: Partial<RegisterData>
 ): Promise<ApiResponse> => {
   const token = localStorage.getItem("accessToken");
-  const res = await api.patch<ApiResponse>("/auth/update-profile", profileData, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const res = await api.patch<ApiResponse>(
+    "/auth/update-profile",
+    profileData,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
   return res.data;
 };
 
-
 export const logoutUser = async (): Promise<void> => {
-  await api.post("/auth/logout");
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
-  window.location.href = "/login";
+  const refreshTokenValue = localStorage.getItem("refreshToken");
+  try {
+    await api.post("/auth/logout", { refreshToken: refreshTokenValue });
+  } finally {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("user");
+    window.location.href = "/login";
+  }
 };

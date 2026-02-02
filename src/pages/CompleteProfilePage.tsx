@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,9 +10,12 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { completeProfile } from "@/services/authService";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function CompleteProfilePage() {
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const navigate = useNavigate();
+  const { checkAuthStatus } = useAuth();
   const [formData, setFormData] = useState({
     phone: "",
     businessName: "",
@@ -43,34 +46,34 @@ export default function CompleteProfilePage() {
     }));
   };
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data } = await axios.put(
-        `${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/complete-profile/${
-          user._id
-        }`,
-        {
-          ...formData,
-          isActive: true, // ✅ override to true
-        },
-        { withCredentials: true }
-      );
+      const res = await completeProfile({
+        ...formData,
+        isActive: true,
+      });
 
-      localStorage.setItem("user", JSON.stringify(data.user));
+      const userPayload = res?.data ?? (res as { data?: Record<string, unknown> })?.data;
+      if (userPayload) {
+        localStorage.setItem("user", JSON.stringify(userPayload));
+      }
+      localStorage.removeItem("incompleteProfile");
+
       toast({
         title: "Profile completed!",
         description: "Your account is now active and verified.",
       });
 
-      window.location.href = "/";
-    } catch (error: any) {
+      await checkAuthStatus();
+      navigate("/", { replace: true });
+    } catch (err: unknown) {
+      const axErr = err as { response?: { data?: { message?: string } } };
       toast({
         title: "Error",
         description:
-          error.response?.data?.message || "Failed to complete profile.",
+          axErr?.response?.data?.message || "Failed to complete profile.",
         variant: "destructive",
       });
     } finally {

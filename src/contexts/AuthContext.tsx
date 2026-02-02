@@ -11,9 +11,34 @@ import {
   loginUser,
   getCurrentUser,
   refreshToken,
+  logoutUser,
 } from "@/services/authService";
-import { error } from "console";
 import api from "@/services/api";
+
+/** Normalize backend user (id → _id) and ensure shape matches User */
+function normalizeUser(raw: Record<string, unknown> | null): User | null {
+  if (!raw || typeof raw !== "object") return null;
+  const u = raw as Record<string, unknown>;
+  return {
+    _id: (u._id ?? u.id) as string,
+    firstName: (u.firstName ?? "") as string,
+    lastName: (u.lastName ?? "") as string,
+    email: (u.email ?? "") as string,
+    phone: (u.phone ?? "") as string,
+    businessName: (u.businessName ?? "") as string,
+    businessType: (u.businessType ?? "") as string,
+    monthlyGoal: (u.monthlyGoal ?? 0) as number,
+    currentEarnings: (u.currentEarnings ?? 0) as number,
+    totalInvoices: (u.totalInvoices ?? 0) as number,
+    paidInvoices: (u.paidInvoices ?? 0) as number,
+    authProvider: (u.authProvider ?? "local") as User["authProvider"],
+    avatar: u.avatar as string | null | undefined,
+    isProfileComplete: (u.isProfileComplete ?? false) as boolean,
+    isActive: (u.isActive ?? true) as boolean,
+    emailVerified: (u.emailVerified ?? false) as boolean,
+    plan: (u.plan ?? "free") as User["plan"],
+  };
+}
 
 // Type definitions
 interface User {
@@ -118,9 +143,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       const res = await getCurrentUser();
-      if (res?.data) {
-        setUser(res.data);
+      const userData = res?.data ?? (res as unknown as { data?: Record<string, unknown> })?.data;
+      const normalized = normalizeUser(userData ?? null);
+      if (normalized) {
+        setUser(normalized);
         setIsAuthenticated(true);
+        localStorage.setItem("user", JSON.stringify(normalized));
       } else {
         setUser(null);
         setIsAuthenticated(false);
@@ -169,39 +197,38 @@ export function AuthProvider({ children }: AuthProviderProps) {
     });
   };
 
-  // Simplified login - sets token + user directly
+  // Email/password login — calls backend, stores tokens, sets user
   const login = async (
     email: string,
-    password: string
-    // rememberMe = false
+    password: string,
+    _rememberMe?: boolean
   ): Promise<AuthResponse> => {
     setIsLoading(true);
     try {
       const response = await loginUser({ email, password });
-      if (response?.user || response?.data?.user) {
-        const token = response.tokens?.accessToken || response.data?.tokens?.accessToken || "";
+      const userPayload = response?.data ?? (response as { data?: Record<string, unknown> })?.data;
+      const tokens = response?.tokens;
 
-        // Save token for persistent auth
-        if (token) {
-          localStorage.setItem("accessToken", token);
+      if (userPayload && tokens?.accessToken) {
+        const normalized = normalizeUser(userPayload);
+        if (normalized) {
+          setUser(normalized);
+          setIsAuthenticated(true);
+          localStorage.setItem("user", JSON.stringify(normalized));
         }
-        setUser(user);
-        setIsAuthenticated(true);
-
-        return { success: true, user, accessToken: token };
-      } else {
-        return { success: false, error: "Login failed" };
+        return { success: true, user: normalized ?? undefined, accessToken: tokens.accessToken };
       }
+      return { success: false, error: response?.message ?? "Login failed" };
     } catch (error) {
       return {
         success: false,
-        error: "Login failed, Invalid credentials please try again.",
+        error: "Login failed. Invalid credentials — please try again.",
       };
     } finally {
       setIsLoading(false);
     }
   };
-  // Simulate API login call
+  // (authService.loginUser already stores accessToken + refreshToken)
   //   const response = await simulateLogin(email, password);
 
   //   if (response.success && response.data) {
@@ -282,10 +309,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }*/
 
   const logout = (): void => {
-    localStorage.removeItem("accessToken");
     setUser(null);
     setIsAuthenticated(false);
-    // Optionally call backend /auth/logout to clear cookies
+    logoutUser().catch(() => {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user");
+      window.location.href = "/login";
+    });
   };
 
   // Simulate logout from app
